@@ -62,3 +62,9 @@ Type 'q()' to quit R.
 > x <- matrix(rnorm(N*p),ncol=p)
 > 
 > system.time(fit0<-rfit(y~x))
+   user  system elapsed 
+ 27.216   0.148  27.379 
+> system.time(fit1<-bigRfit(x,y))
+   user  system elapsed 
+  0.472   0.004   0.478 
+> 
