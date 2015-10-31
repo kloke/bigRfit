@@ -33,6 +33,7 @@ breaks[length(breaks)] <- Inf
 scoresvec <- getScores.brf(ehat,breaks,scores=scores)
 D0 <- disp(ehat,scoresvec)
 
+converge <- FALSE
 i <- 0
 while( i < max.iter ) {
   i <- i + 1
@@ -47,18 +48,29 @@ while( i < max.iter ) {
 
   D1 <- disp(ehat,scoresvec)
 
-  if( (D0 - D1)/D0 < eps ) break()
+  if( (D0 - D1)/D0 < eps ) { 
+    converge <- TRUE
+    break()
+  }
 
   D0 <- D1
 
 }
-yhat <- y-ehat
-betahat <- qr.coef(qrx,yhat)
-
 alphahat <- median(ehat)
+ehat <- ehat - alphahat
+yhat <- y-ehat
+fit.ls <- lsfit(x,yhat,intercept=TRUE)
 
 taustar <- taustar(ehat,qrx$rank)
 
-list(coef=c(alphahat,betahat),fitted.values=yhat,residuals=ehat,tauhat=tauhat1,taustar=taustar,iter=i)
+res <- list(coefficients=fit.ls$coefficients,
+  fitted.values=yhat,residuals=ehat,x=cbind(rep(1,ncol(x)),x),y=y,
+  tauhat=tauhat1,taushat=taustar,
+  qrx1=fit.ls$qr, disp=D1, scores=scores,
+  iter=i,converge=converge)
+
+class(res) <- list("bigRfit","rfit")
+
+res
 
 }
