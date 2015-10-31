@@ -10,8 +10,10 @@ p <- 20
 y <- rnorm(N)
 x <- matrix(rnorm(N*p),ncol=p)
 
+y <- 100+ x[,1]*10 +rnorm(N)
+
 system.time(fit0<-rfit(y~x))
-system.time(fit1<-bigRfit(x,y))
+system.time(fit1<-bigRfit(x,y,scores=wscores))
 
 fit0$coef
 fit1$coef
