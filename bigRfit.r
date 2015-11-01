@@ -63,10 +63,16 @@ fit.ls <- lsfit(x,yhat,intercept=TRUE)
 
 taustar <- taustar(ehat,qrx$rank)
 
+  breaks <- quantile(y,seq(0,1,length=B))
+  breaks[1] <- -Inf
+  breaks[length(breaks)] <- Inf
+  scoresvec <- getScores.brf(y,breaks,scores)
+  D0 <- disp(y,scoresvec)
+
 res <- list(coefficients=fit.ls$coefficients,
   fitted.values=yhat,residuals=ehat,x=cbind(rep(1,ncol(x)),x),y=y,
   tauhat=tauhat1,taushat=taustar,
-  qrx1=fit.ls$qr, disp=D1, scores=scores,
+  qrx1=fit.ls$qr, D1=D1, D0=D0, scores=scores, symmetric=TRUE,
   iter=i,converge=converge)
 
 class(res) <- list("bigRfit","rfit")
