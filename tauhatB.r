@@ -1,10 +1,10 @@
-cppFunction('double tauhatCppGS(NumericVector e, NumericVector s, double h) {
-  int n = e.size();
+cppFunction('double tauhatCppGS(NumericVector e, NumericVector s, NumericVector c, double h, int n) {
+  int m = e.size();
   double est = 0.0;
 
-  for( int i=0; i < n; ++i ) {
-    for( int j=0; j < n; ++j ) {
-      est += s[i] * R::dnorm( (e[i] - e[j])/h,0.0,1.0,0 )/h;
+  for( int i=0; i < m; ++i ) {
+    for( int j=0; j < m; ++j ) {
+      est += s[i] * c[i]*c[j]*R::dnorm( (e[i] - e[j])/h,0.0,1.0,0 )/h;
     }
   }
 
@@ -15,8 +15,8 @@ cppFunction('double tauhatCppGS(NumericVector e, NumericVector s, double h) {
 }')
 
 
-tauhat.gs <- function(e,scores,bw=bw.nrd(e)) {
-  tauhatCppGS(sort(e),getScoresDeriv(scores,seq_len(length(e))/length(e)),bw)
+tauhat.gs <- function(mids,counts,scores,bw=bw.nrd(mids)) {
+  tauhatCppGS(sort(mids),getScoresDeriv(scores,seq_len(length(mids))/length(mids)),counts,bw,sum(counts))
 }
 
 
