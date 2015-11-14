@@ -81,7 +81,7 @@ taustar <- taustar(ehat,qrx$rank)
   D0 <- disp(y,scrs$scorevec)
 
 res <- list(coefficients=fit.ls$coefficients,
-  fitted.values=yhat,residuals=ehat,x=cbind(rep(1,ncol(x)),x),y=y,
+  fitted.values=yhat,residuals=ehat,x=cbind(1,x),y=y,
   tauhat=tauhat1,taushat=taustar,
   qrx1=fit.ls$qr, D1=D1, D0=D0, scores=scores, symmetric=TRUE,
   iter=i,converge=converge)
