@@ -12,7 +12,7 @@ if(length(y) <= 2000) stop("bigRfit requires at least 2000 records.  This is a j
 
 getScores.brf <- function(ehat,breaks,scores) {
   ngb <- hist(ehat,br=breaks,plot=FALSE)
-  scores1 <- getScores(scores,c(0,cumsum(ngb$counts)/N))
+  scores1 <- getScores(scores,c(0,cumsum(ngb$counts)/sum(ngb$counts)))
   scoresvec <- (scores1[2:length(scores1)]+scores1[1:(length(scores1)-1)])/2
   cuts <- as.factor(cut(ehat,ngb$breaks,labels=FALSE))
   cutmat0 <- data.table(keys=levels(cuts),scores=scoresvec)
