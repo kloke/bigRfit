@@ -11,14 +11,21 @@ if(length(y) <= 2000) stop("bigRfit requires at least 2000 records.  This is a j
 # B is the number of buckets
 
 getScores.brf <- function(ehat,breaks,scores) {
+#  breaks <- unique(breaks)
   ngb <- hist(ehat,br=breaks,plot=FALSE)
   scores1 <- getScores(scores,c(0,cumsum(ngb$counts)/sum(ngb$counts)))
   scoresvec <- (scores1[2:length(scores1)]+scores1[1:(length(scores1)-1)])/2
-  cuts <- as.factor(cut(ehat,ngb$breaks,labels=FALSE))
-  cutmat0 <- data.table(keys=levels(cuts),scores=scoresvec)
+#  cuts <- as.factor(cut(ehat,ngb$breaks,labels=FALSE))
+  cuts <- cut(ehat,ngb$breaks,labels=FALSE)
+  lc <- sort(unique(cuts))
+  scoresvec <- scoresvec[lc]
+#  cutmat0 <- data.table(keys=lc,scores=scoresvec)
+#  cutsmat <- data.table(keys=as.numeric(cuts))
+  cutmat0 <- data.table(keys=lc,scores=scoresvec)
   cutsmat <- data.table(keys=cuts)
   scoremat <- merge(cutsmat,cutmat0,by='keys',all.x=TRUE,sort=FALSE)
-  list(scorevec=scoremat$scores,mids=ngb$mids,counts=ngb$counts)
+  scorevec <- scoremat$scores - mean(scoremat$scores)
+  list(scorevec=scorevec,mids=ngb$mids,counts=ngb$counts)
 }
 
 disp <- function( ehat, scores ) {
@@ -29,7 +36,7 @@ get_breaks <- function(ehat,B) {
   breaks <- quantile(ehat,seq(0,1,length=B))
   ind <- c(1,length(breaks))
   breaks[ind] <- breaks[ind] + eps*sd(breaks)*c(-1,1)
-  breaks
+  unique(breaks)
 }
 
 qrx <- qr(scale(x,center=TRUE,scale=FALSE))
@@ -37,7 +44,6 @@ qrx <- qr(scale(x,center=TRUE,scale=FALSE))
 ehat <- qr.resid(qrx,y)
 
 breaks <- get_breaks(ehat,B)
-
 scrs <- getScores.brf(ehat,breaks,scores=scores)
 
 #scoresvec <- getScores.brf(ehat,breaks,scores=scores)
@@ -49,21 +55,31 @@ while( i < max.iter ) {
   i <- i + 1
   
   tauhat1 <- tauhat.gs(scrs$mids,scrs$counts,scores,bw.nrd(ehat))
-  ehat <- ehat - tauhat1*qr.fitted(qrx,scrs$scorevec)
+  dir1 <- -tauhat1*qr.fitted(qrx,scrs$scorevec)
+  ehat1 <- ehat + dir1
 
-  breaks <- get_breaks(ehat,B)
+  breaks <- get_breaks(ehat1,B)
 #  breaks[c(1,length(breaks))] <- c(-Inf,Inf)
 #  scoresvec <- getScores.brf(ehat,breaks,scores)
-  scrs <- getScores.brf(ehat,breaks,scores=scores)
+  scrs <- getScores.brf(ehat1,breaks,scores=scores)
 
-  D1 <- disp(ehat,scrs$scorevec)
+  D1 <- disp(ehat1,scrs$scorevec)
 
-  if( (D0 - D1)/D0 < eps ) { 
-    converge <- TRUE
-    break()
+  if( D1 > D0 ) {
+    ehat1 <- ehat + 0.5 * dir1
+  } else {
+
+    if( (D0 - D1)/D0 < eps ) { 
+      converge <- TRUE
+      break()
+    }
+
+    D0 <- D1
+
   }
 
-  D0 <- D1
+  ehat <- ehat1
+
 
 }
 alphahat <- median(ehat)
@@ -76,6 +92,7 @@ taustar <- taustar(ehat,qrx$rank)
   breaks <- quantile(y,seq(0,1,length=B))
   breaks[1] <- -Inf
   breaks[length(breaks)] <- Inf
+  breaks <- unique(breaks)
   scrs <- getScores.brf(y,breaks,scores=scores)
 #  scoresvec <- getScores.brf(y,breaks,scores)
   D0 <- disp(y,scrs$scorevec)
