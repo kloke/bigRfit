@@ -1,0 +1,14 @@
+Package: bigRfit
+Type: Package
+Title: Big data version of Rfit
+Version: 0.1.0
+Date: 2016-06-28
+Author: John Kloke, Joesph McKean, John Kapenga
+Maintainer: John Kloke <kloke@biostat.wisc.edu>
+Description: Uses step scores --- which assign constant score to residuals in the same bin --- to increase speed.  i.e. implements only a partial sorting instead of a full sort of the data.
+License: GPL (>=2)
+LazyLoad: yes
+LazyData: yes
+Imports: Rcpp (>= 0.12.5)
+LinkingTo: Rcpp
+Depends: data.table, Rfit

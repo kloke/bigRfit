@@ -1,11 +1,12 @@
-bigRfit <- function(x,y,B = min(max(length(y)^(2/3),1000),100000),scores=wscores,
+bigRfit <-
+function(x,y,B = 101, scores=Rfit::wscores,
   max.iter=100, eps=(.Machine$double.eps)^0.5) {
 
 # should scale y by sd 
 
 # note: normal scores don't work at the moment
 
-if(length(y) <= 2000) stop("bigRfit requires at least 2000 records.  This is a job for rfit.")
+if(length(y) <= 200) stop("bigRfit requires at least 200 records.  This is a job for rfit.")
 # x is n x p design matrix
 # y is n x 1 response vector
 # B is the number of buckets (plus 1?)

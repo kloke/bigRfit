@@ -1,0 +1,16 @@
+import(Rfit)
+import(data.table)
+import(Rcpp)
+
+useDynLib(bigRfit)
+exportPattern(".")
+importFrom(Rcpp, evalCpp)
+importFrom(Rcpp, sourceCpp)
+importFrom(stats,median)
+importFrom(stats,lsfit)
+importFrom(stats,quantile)
+importFrom(stats,bw.nrd)
+importFrom(stats,sd)
+importFrom(graphics,hist)
+
+
