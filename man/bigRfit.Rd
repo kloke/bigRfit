@@ -4,10 +4,10 @@
 \description{
 An implementation of rank-based estimation when working with big data.
 Uses step scores to increase the speed.
-Requires at least 200 records in the dataset.
+Requires at least 2003 records in the dataset.
 }
 \usage{
-bigRfit(x, y, B = 101, scores = Rfit::wscores, max.iter = 100, eps = (.Machine$double.eps)^0.5)
+bigRfit(x, y, B = 1001, scores = Rfit::wscores, max.iter = 100, eps = (.Machine$double.eps)^0.625)
 }
 \arguments{
   \item{x}{n by p design matrix }
@@ -36,15 +36,15 @@ bigRfit(x, y, B = 101, scores = Rfit::wscores, max.iter = 100, eps = (.Machine$d
 \references{
 Hettmansperger, T.P. and McKean J.W. (2011), \emph{Robust Nonparametric Statistical Methods, 2nd ed.}, New York: Chapman-Hall.
 }
-\author{ John Kloke \email{kloke@biostat.wisc.edu}}
+\author{John Kloke \email{johndkloke@gmail.com}}
 
 \seealso{\code{\link{Rfit}} }
 \examples{
 n <- 10^4; p <- 10
 x <- matrix(rnorm(n*p),ncol=p)
 y <- rnorm(n)
-system.time(fit0 <- rfit(y~x))
-summary(fit0)
+#system.time(fit0 <- rfit(y~x))
+#summary(fit0)
 #system.time(fit1 <- bigRfit(x,y))
 #summary(fit1)
 }

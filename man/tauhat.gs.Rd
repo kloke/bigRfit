@@ -25,5 +25,5 @@ Hettmansperger, T.P. and McKean J.W. (2011), \emph{Robust Nonparametric Statisti
 
 \author{
 John Kloke, Joesph McKean, John Kapenga
-Maintainer: John Kloke <kloke@biostat.wisc.edu>
+Maintainer: John Kloke <johndkloke@gmail.com>
 }

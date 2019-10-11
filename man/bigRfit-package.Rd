@@ -17,7 +17,7 @@ License: \tab GPL (>=2)\cr
 }
 \author{
 John Kloke, Joesph McKean, John Kapenga
-Maintainer: John Kloke <kloke@biostat.wisc.edu>
+Maintainer: John Kloke <johndkloke@gmail.com>
 }
 \references{
 Hettmansperger, T.P. and McKean J.W. (2011), \emph{Robust Nonparametric Statistical Methods, 2nd ed.}, New York: Chapman-Hall.
@@ -27,7 +27,7 @@ Hettmansperger, T.P. and McKean J.W. (2011), \emph{Robust Nonparametric Statisti
 code{\link[Rfit]{Rfit}} ~~
 }
 \examples{
-n <- 10^4; p <- 10
+n <- 10^6; p <- 10
 x <- matrix(rnorm(n*p),ncol=p)
 y <- rnorm(n)
 #system.time(fit1 <- bigRfit(x,y))

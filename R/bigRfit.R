@@ -1,21 +1,33 @@
 bigRfit <-
-function(x,y,B = 101, scores=Rfit::wscores,
-  max.iter=100, eps=(.Machine$double.eps)^0.5) {
+function(x,y,B = 1001, scores=Rfit::wscores,
+  max.iter=100, eps=(.Machine$double.eps)^0.625) {
 
 # should scale y by sd 
 
-# note: normal scores don't work at the moment
+# input checks
+if(length(y) <= 2002) stop("bigRfit requires at least 2002 records.  This is a job for rfit.")
+if( length(y)/B < 2 ) stop("Number of bins requested too large. Consider using rfit or reducing number of bins.")
 
-if(length(y) <= 200) stop("bigRfit requires at least 200 records.  This is a job for rfit.")
+# potiential arguments to function
+trace <- 1
+yhat0 <- y
+#qrx <- qr(scale(x,center=TRUE,scale=FALSE))
+
+if(length(y) != nrow(x)) stop("response vector (y) not in the same dimension as design matrix (x)")
+#n <- length(y)
+
 # x is n x p design matrix
 # y is n x 1 response vector
-# B is the number of buckets (plus 1?)
+# B is the number of bins + 1
 
 getScores.brf <- function(ehat,breaks,scores) {
 #  breaks <- unique(breaks)
   ngb <- hist(ehat,br=breaks,plot=FALSE)
-  scores1 <- getScores(scores,c(0,cumsum(ngb$counts)/sum(ngb$counts)))
-  scoresvec <- (scores1[2:length(scores1)]+scores1[1:(length(scores1)-1)])/2
+  rank1 <- cumsum(ngb$counts)      #high rank
+  rank0 <- rank1 - ngb$counts + 1  #low rank
+  ave_rank <- (rank1 + rank0)/2
+  scoresvec <- getScores(scores,ave_rank/(length(ehat)+1))
+#  scoresvec <- (scores1[2:length(scores1)]+scores1[1:(length(scores1)-1)])/2
 #  cuts <- as.factor(cut(ehat,ngb$breaks,labels=FALSE))
   cuts <- cut(ehat,ngb$breaks,labels=FALSE)
   lc <- sort(unique(cuts))
@@ -30,7 +42,8 @@ getScores.brf <- function(ehat,breaks,scores) {
 }
 
 disp <- function( ehat, scores ) {
-  sum( ehat*scores )
+  drop(crossprod(ehat,scores))
+#  sum( ehat*scores )
 }
 
 get_breaks <- function(ehat,B) {
@@ -42,47 +55,72 @@ get_breaks <- function(ehat,B) {
 
 qrx <- qr(scale(x,center=TRUE,scale=FALSE))
 
-ehat <- qr.resid(qrx,y)
+ehat <- qr.resid(qrx,yhat0)
+# rm(yhat0)
 
 breaks <- get_breaks(ehat,B)
 scrs <- getScores.brf(ehat,breaks,scores=scores)
 
 #scoresvec <- getScores.brf(ehat,breaks,scores=scores)
-D0 <- disp(ehat,scrs$scorevec)
+D1 <- disp(ehat,scrs$scorevec)
 
 converge <- FALSE
 i <- 0
+
+ehat0 <- ehat
+D0 <- D1
+
 while( i < max.iter ) {
   i <- i + 1
-  
+ if( trace ) cat(paste0("iter = ", i, "\n"))
   tauhat1 <- tauhat.gs(scrs$mids,scrs$counts,scores,bw.nrd(ehat))
+if( trace ) cat(paste0("  tauhat = ", tauhat1, "\n"))
   dir1 <- -tauhat1*qr.fitted(qrx,scrs$scorevec)
-  ehat1 <- ehat + dir1
 
-  breaks <- get_breaks(ehat1,B)
+#############
+# backtrack #
+#############
+backtrack.denom <- crossprod(dir1)/tauhat1
+
+backtrack.c <- 0.0001
+backtrack.alpha <- 1
+backtrack.rho <- 0.5
+repeat {
+
+if(trace) cat(paste0('Backtrack : alpha = ', backtrack.alpha, "\n"))
+  ehat <- ehat0 + backtrack.alpha*dir1
+  breaks <- get_breaks(ehat,B)
 #  breaks[c(1,length(breaks))] <- c(-Inf,Inf)
 #  scoresvec <- getScores.brf(ehat,breaks,scores)
-  scrs <- getScores.brf(ehat1,breaks,scores=scores)
+  scrs <- getScores.brf(ehat,breaks,scores=scores)
 
-  D1 <- disp(ehat1,scrs$scorevec)
+  D1 <- disp(ehat,scrs$scorevec)
 
-  if( D1 > D0 ) {
-    ehat1 <- ehat + 0.5 * dir1
-  } else {
+if(trace) cat(paste0('  D1 = ', D1, "\n"))
+if(trace) cat(paste0('  D0 = ', D0, "\n"))
+  if( (D1 - D0)/backtrack.denom <= backtrack.c*backtrack.alpha) (break)()
+  backtrack.alpha <- backtrack.alpha*backtrack.rho
 
+}
+#############
+#############
     if( (D0 - D1)/D0 < eps ) { 
       converge <- TRUE
       break()
     }
 
-    D0 <- D1
-
-  }
-
-  ehat <- ehat1
-
-
+  D0 <- D1
+  ehat0 <- ehat
 }
+
+if(!converge) cat('Note: convergance criteria not met.  iter = ', i, "\n")
+
+if( D0 < D1 ) {
+cat("Note: setting estimate to previous iteration.\n")
+  D1 <- D0
+  ehat <- ehat0
+}
+
 alphahat <- median(ehat)
 ehat <- ehat - alphahat
 yhat <- y-ehat
@@ -97,6 +135,26 @@ taustar <- taustar(ehat,qrx$rank)
   scrs <- getScores.brf(y,breaks,scores=scores)
 #  scoresvec <- getScores.brf(y,breaks,scores)
   D0 <- disp(y,scrs$scorevec)
+
+
+# Huber's DF correction
+dftauhat <- function(tauhat,ehat,param,p){
+
+        epshc <- 0.000001
+        n <- length(ehat)
+#        ind <- rep(0,n)
+#        ind[abs(ehat/tauhat) < param] <- 1
+#        hubcor <- sum(ind)/n
+#
+  hubcor <- mean( abs(ehat/tauhat) < param )
+        if(hubcor < epshc){hubcor <- epshc}
+        corr <- sqrt(n/(n-p))*(1 + ((p/n)*((1-hubcor)/hubcor)))
+        tauhat <- tauhat*corr
+        tauhat
+}
+
+huber <- FALSE
+if(huber) tauhat1 <- dftauhat(tauhat1,ehat,param=2,qrx$rank)
 
 res <- list(coefficients=fit.ls$coefficients,
   fitted.values=yhat,residuals=ehat,x=cbind(1,x),y=y,
