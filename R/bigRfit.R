@@ -1,6 +1,6 @@
 bigRfit <-
 function(x,y,B = 1001, scores=Rfit::wscores,
-  max.iter=100, eps=(.Machine$double.eps)^0.625) {
+  max.iter=100, eps=(.Machine$double.eps)^0.625, yhat0=NULL) {
 
 # should scale y by sd 
 
@@ -9,8 +9,8 @@ if(length(y) <= 2002) stop("bigRfit requires at least 2002 records.  This is a j
 if( length(y)/B < 2 ) stop("Number of bins requested too large. Consider using rfit or reducing number of bins.")
 
 # potiential arguments to function
-trace <- 1
-yhat0 <- y
+trace <- 0
+if(is.null(yhat0)) yhat0 <- y
 #qrx <- qr(scale(x,center=TRUE,scale=FALSE))
 
 if(length(y) != nrow(x)) stop("response vector (y) not in the same dimension as design matrix (x)")
@@ -47,9 +47,10 @@ disp <- function( ehat, scores ) {
 }
 
 get_breaks <- function(ehat,B) {
+  EPS <- 0.00001
   breaks <- quantile(ehat,seq(0,1,length=B))
   ind <- c(1,length(breaks))
-  breaks[ind] <- breaks[ind] + eps*sd(breaks)*c(-1,1)
+  breaks[ind] <- breaks[ind] + EPS*sd(breaks)*c(-1,1)
   unique(breaks)
 }
 
