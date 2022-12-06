@@ -1,4 +1,4 @@
-bigRfit <-
+bigRfit1 <-
 function(x,y,B = 1001, scores=Rfit::wscores,
   max.iter=100, eps=(.Machine$double.eps)^0.625, yhat0=NULL) {
 

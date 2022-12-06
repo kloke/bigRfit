@@ -1,6 +1,7 @@
 import(Rfit)
 import(data.table)
 import(Rcpp)
+import(biglm)
 
 useDynLib(bigRfit)
 exportPattern(".")
@@ -13,4 +14,8 @@ importFrom(stats,bw.nrd)
 importFrom(stats,sd)
 importFrom(graphics,hist)
 
-
+S3method(print,bigRfit) 
+S3method(vcov,bigRfit_xc)
+S3method(vcov,bigRreg)
+S3method(summary,bigRfit)
+S3method(print,summary.bigRfit)

@@ -1,14 +1,16 @@
 Package: bigRfit
 Type: Package
 Title: Big data version of Rfit
-Version: 0.7.1
-Date: October 2019
+Version: 0.8.1
+Date: December 2022
 Author: John Kloke, Joesph McKean, John Kapenga
 Maintainer: John Kloke <johndkloke@gmail.com>
 Description: Uses step scores --- which assign constant score to residuals in the same bin --- to increase speed.  i.e. implements only a partial ordering instead of a full ranking of the data.
 License: GPL (>=2)
 LazyLoad: yes
-LazyData: yes
 Imports: Rcpp (>= 0.12.5)
 LinkingTo: Rcpp
-Depends: data.table, Rfit
+Depends: data.table, Rfit, biglm
+Suggests: sparklyr, knitr, rmarkdown
+VignetteBuilder: knitr
+NeedsCompilation: yes
