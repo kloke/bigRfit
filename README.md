@@ -4,6 +4,9 @@ bigRfit: Rank-based estimation for linear models in a big data setting
 ### Update v0.8.1 December 2022 ###
 New driver function **bigRreg**
 Fits regression model y = 1 alpha + X beta + e 
+where 1 is an n x 1 vector of ones and X is an n x p matrix.
+The model estimates are returned as alphahat and betahat.
+Note: coef is NULL by design as it is reserved for future development.
 
 Uses biglm to obtain projection rather core R qr as was the case in the previous version --- previous version now renamed bigRfit1. 
 New driver version of bigRfit is planned.
