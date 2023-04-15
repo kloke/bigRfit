@@ -30,3 +30,4 @@ scrsD <- rep(as.double(scoreMat[,scrsD]),times=scoreMat[,count])
 		
 }
 
+approxtauF0 <- gettauBDF0
